@@ -141,11 +141,15 @@ type hostLocalIPAMConfig struct {
 	ResolveConf string        `json:"resolveConf,omitempty"`
 	DataDir     string        `json:"dataDir,omitempty"`
 	Ranges      [][]IPAMRange `json:"ranges,omitempty"`
+	Capabilities map[string]bool `json:"capabilities,omitempty"`
 }
 
 func newHostLocalIPAMConfig() *hostLocalIPAMConfig {
 	return &hostLocalIPAMConfig{
 		Type: "host-local",
+		Capabilities: map[string]bool{
+			"ips": true,
+		},
 	}
 }
 

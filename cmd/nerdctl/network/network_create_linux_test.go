@@ -156,6 +156,30 @@ func TestNetworkCreate(t *testing.T) {
 				}
 			},
 		},
+		{
+			Description: "with static IPv4 address",
+			Setup: func(data test.Data, helpers test.Helpers) {
+				networkName := data.Identifier()
+				staticIP := "172.19.0.100"
+				data.Labels().Set("networkName", networkName)
+				data.Labels().Set("staticIP", staticIP)
+				helpers.Ensure("network", "create", networkName, "--subnet", "172.19.0.0/24")
+			},
+			Cleanup: func(data test.Data, helpers test.Helpers) {
+				helpers.Anyhow("network", "rm", data.Labels().Get("networkName"))
+			},
+			Command: func(data test.Data, helpers test.Helpers) test.TestableCommand {
+				return helpers.Command("run", "--rm", "--net", data.Labels().Get("networkName"), "--ip", data.Labels().Get("staticIP"), testutil.CommonImage, "ip", "addr", "show", "eth0")
+			},
+			Expected: func(data test.Data, helpers test.Helpers) *test.Expected {
+				return &test.Expected{
+					ExitCode: 0,
+					Output: func(stdout string, t tig.T) {
+						assert.Assert(t, strings.Contains(stdout, fmt.Sprintf("inet %s/24", data.Labels().Get("staticIP"))))
+					},
+				}
+			},
+		},
 	}
 
 	testCase.Run(t)
